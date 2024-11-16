@@ -1,3 +1,6 @@
+.cache/
+
 *.d
 *.o
 point
+compile_commands.json
