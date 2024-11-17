@@ -27,23 +27,36 @@ int quality = 75;
 J_COLOR_SPACE color_space;
 
 void negate(){
-  for (int y = 0; y < height; y++) {
-    JSAMPROW row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      JSAMPROW pixel = &(row[x*3]);
-      pixel[0] = 255 - pixel[0];
-      pixel[1] = 255 - pixel[1];
-      pixel[2] = 255 - pixel[2];
+    for (int y = 0; y < height; y++) {
+        JSAMPROW row = row_pointers[y];
+        for (int x = 0; x < width; x++) {
+            JSAMPROW pixel = &(row[x * 3]);
+            for (int k = 0; k <= 2; k++) {
+                pixel[k] = 255 - pixel[k];
+            }
+        }
     }
-  }
+}
+
+int clamp(int min, int max, int value) {
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
+    return value;
 }
 
 void brightness() {
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
-            JSAMPROW pixel = &(row[x*3]);
-            // TODO)) Brightness
+            JSAMPROW pixel = &(row[x * 3]);
+            for (int k = 0; k <= 2; k++) {
+                int new_value = pixel[k] + (percent / 100) * pixel[k];
+                pixel[k] = clamp(0, 255, new_value);
+            }
         }
     }
 }
