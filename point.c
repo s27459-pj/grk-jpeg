@@ -27,28 +27,121 @@ int quality = 75;
 J_COLOR_SPACE color_space;
 
 void negate(){
-  int x, y;
   if (color_space != JCS_RGB)  return;
 
-  for (y=0; y<height; y++) {
+  for (int y = 0; y < height; y++) {
     JSAMPROW row = row_pointers[y];
-    for (x=0; x<width; x++) {
-      JSAMPROW ptr = &(row[x*3]);
-      ptr[0] = 255 - ptr[0];
-      ptr[1] = 255 - ptr[1];
-      ptr[2] = 255 - ptr[2];
+    for (int x = 0; x < width; x++) {
+      JSAMPROW pixel = &(row[x*3]);
+      pixel[0] = 255 - pixel[0];
+      pixel[1] = 255 - pixel[1];
+      pixel[2] = 255 - pixel[2];
     }
   }
 }
 
+void brightness() {
+    if (color_space != JCS_RGB)  return;
 
-void process_file(){
-    if(strcmp(filter, "negate") ==0 ){
-            negate();
+    for (int y = 0; y < height; y++) {
+        JSAMPROW row = row_pointers[y];
+        for (int x = 0; x < width; x++) {
+            JSAMPROW pixel = &(row[x*3]);
+            // TODO)) Brightness
+        }
     }
-    else if(strcmp(filter, "contrast") ==0 ){
-            printf("wybrano filter contrast :-)\n");
+}
+
+void contrast() {
+    if (color_space != JCS_RGB)  return;
+
+    for (int y = 0; y < height; y++) {
+        JSAMPROW row = row_pointers[y];
+        for (int x = 0; x < width; x++) {
+            JSAMPROW pixel = &(row[x*3]);
+            // TODO)) Contrast
+        }
     }
+}
+
+void swap(JSAMPROW a, JSAMPROW b) {
+    JSAMPLE temp;
+    for (int k = 0; k <= 2; k++) {
+        temp = a[k];
+        a[k] = b[k];
+        b[k] = temp;
+    }
+}
+
+void flip() {
+    if (color_space != JCS_RGB)  return;
+
+    if(strcmp(axis, "y") == 0) {
+        for (int y = 0; y < height; y++) {
+            JSAMPROW row = row_pointers[y];
+            for (int x = 0; x < width / 2; x++) {
+                JSAMPROW pixel_start = &(row[x * 3]);
+                int pixel_end_index = width - 1 - x ;
+                JSAMPROW pixel_end = &(row[pixel_end_index * 3]);
+                swap(pixel_start, pixel_end);
+            }
+        }
+    }
+    else if(strcmp(axis, "x") == 0) {
+        for (int y = 0; y < height / 2; y++) {
+            JSAMPROW row_start = row_pointers[y];
+            JSAMPROW row_end = row_pointers[height - 1 - y];
+            for (int x = 0; x < width; x++) {
+                JSAMPROW pixel_start = &(row_start[x * 3]);
+                JSAMPROW pixel_end = &(row_end[x * 3]);
+                swap(pixel_start, pixel_end);
+            }
+        }
+    }
+}
+
+void rotate() {
+    if (color_space != JCS_RGB)  return;
+
+    if(strcmp(direction, "right") == 0) {
+        for (int y = 0; y < height; y++) {
+            JSAMPROW row = row_pointers[y];
+            for (int x = 0; x < width / 2; x++) {
+                JSAMPROW pixel_start = &(row[x*3]);
+                JSAMPROW pixel_end = &(row[(width - 1 - x) * 3]);
+
+                // TODO)) Rotate right
+
+                // Swap all channels
+                JSAMPLE temp;
+                for (int k = 0; k <= 2; k++) {
+                    temp = pixel_start[k];
+                    pixel_start[k] = pixel_end[k];
+                    pixel_end[k] = temp;
+                }
+            }
+        }
+    }
+    // TODO)) Rotate left
+}
+
+void process_file() {
+    if (strcmp(filter, "negate") == 0) {
+        return negate();
+    }
+    if (strcmp(filter, "brightness") == 0) {
+        return brightness();
+    }
+    if (strcmp(filter, "contrast") == 0) {
+        return contrast();
+    }
+    if (strcmp(filter, "flip") == 0) {
+        return flip();
+    }
+    if (strcmp(filter, "rotate") == 0) {
+        return rotate();
+    }
+    printf("Unknown filter: %s\n", filter);
 }
 
 
