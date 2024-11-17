@@ -9,6 +9,9 @@
 const char * input_file;
 const char * output_file;
 const char * filter;
+const char * axis;
+const char * direction;
+double percent;
 double times;
 
 
@@ -192,17 +195,23 @@ int main(int argc, char **argv){
   // Options
   struct arg_file *input_file_arg = arg_file1("i", "input-file", "<input>", "Input JPEG File");
   struct arg_file *output_file_arg = arg_file1("o", "out-file" , "<output>", "Output JPEG File");
-  struct arg_str *filter_arg = arg_str1("f", "filter" , "<filter>", "Filter");
-  struct arg_dbl *times_arg = arg_dbl0("t", "times" , "<times>", "Multiplyer");
+  struct arg_str *filter_arg = arg_str1("f", "filter" , "<filter>", "Filter (negate, brightness, contrast, flip, rotate)");
+  struct arg_str *axis_arg = arg_str0("a", "axis", "<axis>", "Axis (x, y)");
+  struct arg_str *direction_arg = arg_str0("d", "direction", "<direction>", "Direction (left, right)");
+  struct arg_dbl *percent_arg = arg_dbl0("p", "percent" , "<percent>", "Percent (for brightness");
+  struct arg_dbl *times_arg = arg_dbl0("t", "times" , "<times>", "Multiplier (for contrast)");
   struct arg_lit *help = arg_lit0("h","help", "print this help and exit");
   struct arg_end *end = arg_end(10); // maksymalna liczba błędów 10
 
   int nerrors;
 
-  void *argtable[] = {input_file_arg, output_file_arg, filter_arg, times_arg, help, end};
+  void *argtable[] = {input_file_arg, output_file_arg, filter_arg, axis_arg, direction_arg, percent_arg, times_arg, help, end};
 
   if (arg_nullcheck(argtable) != 0) printf("error: insufficient memory\n");
 
+  axis_arg->sval[0] = "y";
+  direction_arg->sval[0] = "right";
+  percent_arg->dval[0] = 0;
   times_arg->dval[0] = 1;
 
   nerrors = arg_parse(argc, argv, argtable);
@@ -210,7 +219,7 @@ int main(int argc, char **argv){
   if (help->count > 0){
      printf("Usage: point");
      arg_print_syntax(stdout, argtable,"\n");
-     arg_print_glossary(stdout, argtable,"  %-25s %s\n");
+     arg_print_glossary(stdout, argtable,"  %-30s %s\n");
      arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
      return 0;
   }
@@ -220,6 +229,9 @@ int main(int argc, char **argv){
      input_file = input_file_arg->filename[0];
      output_file = output_file_arg->filename[0];
      filter = filter_arg->sval[0];
+     axis = axis_arg->sval[0];
+     direction = direction_arg->sval[0];
+     percent = percent_arg->dval[0];
      times = times_arg->dval[0];
   }
   else{
