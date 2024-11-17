@@ -109,26 +109,53 @@ void flip() {
 }
 
 void rotate() {
-    if(strcmp(direction, "right") == 0) {
+    JDIMENSION new_height = width;
+    JDIMENSION new_width = height;
+    JSAMPARRAY new_image_rows = malloc(sizeof(j_common_ptr) * new_height);
+    for (int y = 0; y < new_height; y++) {
+        new_image_rows[y] = malloc(sizeof(JSAMPLE) * new_width * num_components);
+    }
+
+    if (strcmp(direction, "right") == 0) {
         for (int y = 0; y < height; y++) {
-            JSAMPROW row = row_pointers[y];
-            for (int x = 0; x < width / 2; x++) {
-                JSAMPROW pixel_start = &(row[x*3]);
-                JSAMPROW pixel_end = &(row[(width - 1 - x) * 3]);
-
-                // TODO)) Rotate right
-
-                // Swap all channels
-                JSAMPLE temp;
-                for (int k = 0; k <= 2; k++) {
-                    temp = pixel_start[k];
-                    pixel_start[k] = pixel_end[k];
-                    pixel_end[k] = temp;
+            JSAMPROW current_row = row_pointers[y];
+            for (int x = 0; x < width; x++) {
+                JSAMPROW current_pixel = &(current_row[x * num_components]);
+                JSAMPROW new_row = new_image_rows[x];
+                int new_pixel_index = new_width - 1 - y;
+                JSAMPROW new_pixel = &(new_row[new_pixel_index * num_components]);
+                for (int k = 0; k < num_components; k++) {
+                    new_pixel[k] = current_pixel[k];
                 }
             }
         }
     }
-    // TODO)) Rotate left
+    else if (strcmp(direction, "left") == 0) {
+        for (int y = 0; y < height; y++) {
+            JSAMPROW current_row = row_pointers[y];
+            for (int x = 0; x < width; x++) {
+                JSAMPROW current_pixel = &(current_row[x * num_components]);
+                JSAMPROW new_row = new_image_rows[new_height - 1 - x];
+                JSAMPROW new_pixel = &(new_row[y * num_components]);
+                for (int k = 0; k < num_components; k++) {
+                    new_pixel[k] = current_pixel[k];
+                }
+            }
+        }
+    }
+    else {
+        printf("Unknown direction! Please use left or right.");
+        return;
+    }
+
+    for (int y = 0; y < height; y++) {
+        free(row_pointers[y]);
+    }
+    free(row_pointers);
+
+    row_pointers = new_image_rows;
+    width = new_width;
+    height = new_height;
 }
 
 void process_file() {
