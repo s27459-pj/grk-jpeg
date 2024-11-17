@@ -30,8 +30,8 @@ void negate(){
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
-            JSAMPROW pixel = &(row[x * 3]);
-            for (int k = 0; k <= 2; k++) {
+            JSAMPROW pixel = &(row[x * num_components]);
+            for (int k = 0; k < num_components; k++) {
                 pixel[k] = 255 - pixel[k];
             }
         }
@@ -52,8 +52,8 @@ void brightness() {
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
-            JSAMPROW pixel = &(row[x * 3]);
-            for (int k = 0; k <= 2; k++) {
+            JSAMPROW pixel = &(row[x * num_components]);
+            for (int k = 0; k < num_components; k++) {
                 int new_value = pixel[k] + (percent / 100) * pixel[k];
                 pixel[k] = clamp(0, 255, new_value);
             }
@@ -65,8 +65,8 @@ void contrast() {
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
-            JSAMPROW pixel = &(row[x*3]);
-            for (int k = 0; k <= 2; k++) {
+            JSAMPROW pixel = &(row[x * num_components]);
+            for (int k = 0; k < num_components; k++) {
                 int new_value = times * (pixel[k] - 127) + 127;
                 pixel[k] = clamp(0, 255, new_value);
             }
@@ -76,7 +76,7 @@ void contrast() {
 
 void swap(JSAMPROW a, JSAMPROW b) {
     JSAMPLE temp;
-    for (int k = 0; k <= 2; k++) {
+    for (int k = 0; k < num_components; k++) {
         temp = a[k];
         a[k] = b[k];
         b[k] = temp;
@@ -88,9 +88,9 @@ void flip() {
         for (int y = 0; y < height; y++) {
             JSAMPROW row = row_pointers[y];
             for (int x = 0; x < width / 2; x++) {
-                JSAMPROW pixel_start = &(row[x * 3]);
+                JSAMPROW pixel_start = &(row[x * num_components]);
                 int pixel_end_index = width - 1 - x ;
-                JSAMPROW pixel_end = &(row[pixel_end_index * 3]);
+                JSAMPROW pixel_end = &(row[pixel_end_index * num_components]);
                 swap(pixel_start, pixel_end);
             }
         }
@@ -100,8 +100,8 @@ void flip() {
             JSAMPROW row_start = row_pointers[y];
             JSAMPROW row_end = row_pointers[height - 1 - y];
             for (int x = 0; x < width; x++) {
-                JSAMPROW pixel_start = &(row_start[x * 3]);
-                JSAMPROW pixel_end = &(row_end[x * 3]);
+                JSAMPROW pixel_start = &(row_start[x * num_components]);
+                JSAMPROW pixel_end = &(row_end[x * num_components]);
                 swap(pixel_start, pixel_end);
             }
         }
