@@ -66,7 +66,10 @@ void contrast() {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
             JSAMPROW pixel = &(row[x*3]);
-            // TODO)) Contrast
+            for (int k = 0; k <= 2; k++) {
+                int new_value = times * (pixel[k] - 127) + 127;
+                pixel[k] = clamp(0, 255, new_value);
+            }
         }
     }
 }
