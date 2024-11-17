@@ -27,8 +27,6 @@ int quality = 75;
 J_COLOR_SPACE color_space;
 
 void negate(){
-  if (color_space != JCS_RGB)  return;
-
   for (int y = 0; y < height; y++) {
     JSAMPROW row = row_pointers[y];
     for (int x = 0; x < width; x++) {
@@ -41,8 +39,6 @@ void negate(){
 }
 
 void brightness() {
-    if (color_space != JCS_RGB)  return;
-
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
@@ -53,8 +49,6 @@ void brightness() {
 }
 
 void contrast() {
-    if (color_space != JCS_RGB)  return;
-
     for (int y = 0; y < height; y++) {
         JSAMPROW row = row_pointers[y];
         for (int x = 0; x < width; x++) {
@@ -74,8 +68,6 @@ void swap(JSAMPROW a, JSAMPROW b) {
 }
 
 void flip() {
-    if (color_space != JCS_RGB)  return;
-
     if(strcmp(axis, "y") == 0) {
         for (int y = 0; y < height; y++) {
             JSAMPROW row = row_pointers[y];
@@ -101,8 +93,6 @@ void flip() {
 }
 
 void rotate() {
-    if (color_space != JCS_RGB)  return;
-
     if(strcmp(direction, "right") == 0) {
         for (int y = 0; y < height; y++) {
             JSAMPROW row = row_pointers[y];
@@ -126,6 +116,11 @@ void rotate() {
 }
 
 void process_file() {
+    if (color_space != JCS_RGB) {
+        printf("Unsupported color space! Please use RGB.");
+        return;
+    };
+
     if (strcmp(filter, "negate") == 0) {
         return negate();
     }
@@ -141,6 +136,7 @@ void process_file() {
     if (strcmp(filter, "rotate") == 0) {
         return rotate();
     }
+
     printf("Unknown filter: %s\n", filter);
 }
 
