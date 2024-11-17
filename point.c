@@ -31,16 +31,12 @@ void negate(){
     JSAMPROW row = row_pointers[y];
     for (x=0; x<width; x++) {
       JSAMPROW ptr = &(row[x*3]);
-      printf("Pixel at position [ %d - %d ] \
-	has the following RGB values: \
-	%d - %d - %d\n",
-      x, y, ptr[0], ptr[1], ptr[2]);
-
-      ptr[0] = 0;
-      ptr[1] = ptr[2];
+      ptr[0] = 255 - ptr[0];
+      ptr[1] = 255 - ptr[1];
+      ptr[2] = 255 - ptr[2];
     }
   }
-}    
+}
 
 
 void process_file(){
@@ -67,9 +63,9 @@ void abort_(const char * s, ...)
 
 
 /**
- * read_jpeg_file Reads from a jpeg file on disk specified by filename and saves into the 
+ * read_jpeg_file Reads from a jpeg file on disk specified by filename and saves into the
  * raw_image buffer in an uncompressed format.
- * 
+ *
  * \returns positive integer if successful, -1 otherwise
  * \param *filename char string specifying the file name to read from
  *
@@ -82,9 +78,9 @@ void read_jpeg_file( const char *filename )
 	struct jpeg_error_mgr jerr;
 	/* libjpeg data structure for storing one row, that is, scanline of an image */
 	int y;
-	
+
 	FILE *infile = fopen( filename, "rb" );
-	
+
 	if ( !infile )
 	{
 		abort_("Error opening input jpeg file %s!\n", filename);
@@ -104,16 +100,16 @@ void read_jpeg_file( const char *filename )
 	height = cinfo.output_height;
 	num_components = cinfo.out_color_components;
 	color_space = cinfo.out_color_space;
-	
-	
+
+
 	/* allocate memory to hold the uncompressed image */
 	size_t rowbytes = width * num_components;
 	row_pointers = (JSAMPARRAY) malloc(sizeof(j_common_ptr) * height);
 	for (y=0; y<height; y++){
 		row_pointers[y] = (JSAMPROW) malloc(rowbytes);
 	}
-	
-	
+
+
 	/* read one scan line at a time */
 	y=0;
 	JSAMPARRAY tmp = row_pointers;
@@ -149,10 +145,10 @@ void write_jpeg_file( const char *filename )
 	int y;
 	JSAMPARRAY tmp;
 
-	
+
 	/* this is a pointer to one row of image data */
 	FILE *outfile = fopen( filename, "wb" );
-	
+
 	if ( !outfile )	{
 		abort_("Error opening output jpeg file %s!\n", filename );
 	}
@@ -161,7 +157,7 @@ void write_jpeg_file( const char *filename )
 	jpeg_stdio_dest(&cinfo, outfile);
 
 	/* Setting the parameters of the output file here */
-	cinfo.image_width = width;	
+	cinfo.image_width = width;
 	cinfo.image_height = height;
 	cinfo.input_components = num_components;
 	cinfo.in_color_space = color_space;
@@ -181,7 +177,7 @@ void write_jpeg_file( const char *filename )
 	jpeg_finish_compress( &cinfo );
 	jpeg_destroy_compress( &cinfo );
 	fclose( outfile );
-	
+
         /* cleanup heap allocation */
 	for (y=0; y<height; y++){
 		free(row_pointers[y]);
@@ -192,7 +188,7 @@ void write_jpeg_file( const char *filename )
 
 
 
-int main(int argc, char **argv){   
+int main(int argc, char **argv){
   // Options
   struct arg_file *input_file_arg = arg_file1("i", "input-file", "<input>", "Input JPEG File");
   struct arg_file *output_file_arg = arg_file1("o", "out-file" , "<output>", "Output JPEG File");
@@ -200,15 +196,15 @@ int main(int argc, char **argv){
   struct arg_dbl *times_arg = arg_dbl0("t", "times" , "<times>", "Multiplyer");
   struct arg_lit *help = arg_lit0("h","help", "print this help and exit");
   struct arg_end *end = arg_end(10); // maksymalna liczba błędów 10
-  
+
   int nerrors;
-  
+
   void *argtable[] = {input_file_arg, output_file_arg, filter_arg, times_arg, help, end};
-  
+
   if (arg_nullcheck(argtable) != 0) printf("error: insufficient memory\n");
-  
+
   times_arg->dval[0] = 1;
-  
+
   nerrors = arg_parse(argc, argv, argtable);
 
   if (help->count > 0){
@@ -219,7 +215,7 @@ int main(int argc, char **argv){
      return 0;
   }
 
-  
+
   if (nerrors==0){
      input_file = input_file_arg->filename[0];
      output_file = output_file_arg->filename[0];
@@ -240,5 +236,3 @@ int main(int argc, char **argv){
    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
    return 0;
 }
-
-
